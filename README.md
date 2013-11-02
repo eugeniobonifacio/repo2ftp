@@ -17,13 +17,13 @@ svn2ftp -c project_config_name -r rev_start:rev_end
 
 Create a folder named "config" at the same level of svn2ftp. Inside create an ".ini" file with the name of your project, don't use spaces! Inside the ini file put these options:
 
-> ftp.host = "ftp.server.net"
-> ftp.username = "username"
-> ftp.password = "password"
->
-> path.base.local = "/the/absolute/path/of/the/project"
-> path.base.svn = "/trunk"
-> path.base.ftp = "/httpdocs/project"
+> ftp.host = "ftp.server.net"  
+> ftp.username = "username"  
+> ftp.password = "password"  
+>  
+> path.base.local = "/the/absolute/path/of/the/project"  
+> path.base.svn = "/trunk"  
+> path.base.ftp = "/httpdocs/project"  
 
 #### Example:
 
@@ -33,29 +33,29 @@ you have a project named "Hello Word" with the following:
 
 the absolute path of the project is "/home/user/work/hello_world" and contains the following
 
-> .
-> ..
-> .svn
-> css/
-> images/
-> index.php
+> .  
+> ..  
+> .svn  
+> css/  
+> images/  
+> index.php  
 
 
 ##### 2. the project is hosted in svn://my_subversion_server.com/projects/hello_world/trunk/
 
 ##### 3. the FTP server is ftp.myftpserver.com
 
-> httpdocs/ <- your project goes here
-> httpsdocs/
-> logs/
+> httpdocs/ <- your project goes here  
+> httpsdocs/  
+> logs/  
 
 
 your ini file should look like this:
 
-> ftp.host = "ftp.myftpserver.com"
-> ftp.username = "your_username"
-> ftp.password = "your_password"
-> 
-> path.base.local = "/home/user/work/hello_world"
-> path.base.svn = "/trunk"
-> path.base.ftp = "/httpdocs"
+> ftp.host = "ftp.myftpserver.com"  
+> ftp.username = "your_username"  
+> ftp.password = "your_password"  
+>  
+> path.base.local = "/home/user/work/hello_world"  
+> path.base.svn = "/trunk"  
+> path.base.ftp = "/httpdocs"  
