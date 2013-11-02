@@ -20,7 +20,7 @@ Create a folder named "config" at the same level of svn2ftp. Inside create an ".
 > ftp.host = "ftp.server.net"
 > ftp.username = "username"
 > ftp.password = "password"
-
+>
 > path.base.local = "/the/absolute/path/of/the/project"
 > path.base.svn = "/trunk"
 > path.base.ftp = "/httpdocs/project"
