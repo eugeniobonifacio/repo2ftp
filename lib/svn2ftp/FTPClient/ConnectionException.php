@@ -2,9 +2,9 @@
 
 namespace svn2ftp\FTPClient;
 
-use \Exception;
+require_once 'FTPException.php';
 
-class ConnectionException extends Exception {
+class ConnectionException extends FTPException {
     
 }
 

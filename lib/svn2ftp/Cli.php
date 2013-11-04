@@ -12,8 +12,8 @@ class Cli {
     
     private $_info = "SVN2FTP %s - Eugenio Bonifacio http://www.eugeniobonifacio.com";
     
-    private $_version_major = 0;
-    private $_version_minor = 1;
+    private $_version_major = 1;
+    private $_version_minor = 0;
     private $_version_fix   = 0;
 
     /**
@@ -80,8 +80,6 @@ class Cli {
         }
 
         $rev_error = false;
-
-        var_dump($opts);
         
         $rev_start = strtoupper($opts[0]) == 'HEAD' ? 'HEAD' : (int)$opts[0];
         
@@ -127,6 +125,17 @@ class Cli {
         return $this->_config;
     }
     
+    public function prompt() {
+        $handle = fopen ("php://stdin","r");
+        $line = fgets($handle);
+        return trim($line);
+    }
+    
+    public function confirm() {
+        $this->output("cli.confirm.continue", array($this->message('cli.confirm.answer.yes.short'), $this->message('cli.confirm.answer.no.short')));
+        return strcasecmp($this->prompt(), $this->message('cli.confirm.answer.yes.short')) === 0;
+    }
+    
     public function message($message, $args = array()) {
         $m = "";
         if($message[0] == ":") {
@@ -140,7 +149,7 @@ class Cli {
     }
     
     public function output($message, $args = array()) {
-        echo $this->message($message, $args) . "\n\n";
+        echo $this->message($message, $args) . "\n";
     }
     
     public function error($message, $args = array()) {

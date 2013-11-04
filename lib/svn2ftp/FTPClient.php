@@ -5,10 +5,12 @@ namespace svn2ftp;
 require_once 'FTPClient/ConnectionException.php';
 require_once 'FTPClient/LoginException.php';
 require_once 'FTPClient/CommandException.php';
+require_once 'FTPClient/FileNotFoundException.php';
 
 use svn2ftp\FTPClient\ConnectionException;
 use svn2ftp\FTPClient\LoginException;
 use svn2ftp\FTPClient\CommandException;
+use svn2ftp\FTPClient\FileNotFoundException;
 
 class FTPClient {
 
@@ -64,6 +66,10 @@ class FTPClient {
             if(is_dir($path_local)) {
                 $ls = ftp_nlist($conn_id, $path_remote_prev);
 
+                if($ls === false) {
+                    throw new ConnectionException();
+                }
+                
                 if(!in_array($path_remote, $ls)) {
                     ftp_mkdir($conn_id, $dir);
                 }
@@ -72,7 +78,12 @@ class FTPClient {
                 }
             }
             elseif($path_remote == $path_remote_full) {
-                ftp_put($conn_id, $path_remote, $path_local, FTP_BINARY);
+                if(file_exists($path_local)) {
+                    ftp_put($conn_id, $path_remote, $path_local, FTP_BINARY);
+                }
+                else {
+                    throw new FileNotFoundException('File not found on local path');
+                }
             }
         }
 
@@ -80,7 +91,6 @@ class FTPClient {
     }
     
     public function delete($file, $base_ftp) {
-        
         $this->chdir($base_ftp);
         
         $conn_id = $this->_ftp_handle;
@@ -98,12 +108,12 @@ class FTPClient {
             $dirs = array();
             $files = array();
             foreach($ls as $entry) {
-                preg_match('/^(.){1}(?:.* [0-9]{2}:[0-9]{2})\s(.*)$/', $entry, $matched);
-                if($matched[1] == 'd') {
-                    $dirs[] = $matched[2];
+                $matched = preg_split("/[\s]+/", $entry, 9, PREG_SPLIT_NO_EMPTY);
+                if($matched[0][0] == 'd') {
+                    $dirs[] = $matched[8];
                 }
                 else {
-                    $files[] = $matched[2];
+                    $files[] = $matched[8];
                 }
             }
 
@@ -118,9 +128,11 @@ class FTPClient {
             }
         }
 
-        if($path_remote == $base_ftp . $file_remote) {
+        if($path_remote == $base_ftp . $file) {
             if($is_file) {
-                ftp_delete($conn_id, $path_remote);
+                if(@ftp_delete($conn_id, $path_remote) === false) {
+                    throw new UnableToDeleteException('Cannot delete file');
+                }
             }
             else {
                 $this->rmdir($path_remote);
@@ -140,29 +152,34 @@ class FTPClient {
         $dirs = array();
         $files = array();
         foreach($ls as $entry) {
-            preg_match('/^(.){1}(?:.* [0-9]{2}:[0-9]{2})\s(.*)$/', $entry, $matched);
-            if($matched[1] == 'd') {
-                $dirs[] = $matched[2];
+            $matched = preg_split("/[\s]+/", $entry, 9, PREG_SPLIT_NO_EMPTY);
+            if($matched[0][0] == 'd') {
+                $dirs[] = $matched[8];
             }
             else {
-                $files[] = $matched[2];
+                $files[] = $matched[8];
             }
         }
 
         if(count($files)) {
             foreach($files as $file) {
-                ftp_delete($conn_id, $file);
+                if(@ftp_delete($conn_id, $path . '/' . $file) === false) {
+                    throw new UnableToDeleteException('Cannot delete file ' . ($path . '/' . $file));
+                }
             }
         }
 
         if(count($dirs)) {
             foreach($dirs as $dir) {
-                ftp_rmdir_recursive($conn_id, $path . '/' . $dir);
+                $this->rmdir($path . '/' . $dir);
             }
         }
 
         ftp_cdup($conn_id);
-        ftp_rmdir($conn_id, $path);
+
+        if(@ftp_rmdir($conn_id, $path) === false) {
+            throw new UnableToDeleteException('Cannot delete folder ' . $path);
+        }
     }
 
     protected function isDir($dir) {

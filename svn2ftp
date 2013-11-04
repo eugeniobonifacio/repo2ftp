@@ -22,6 +22,18 @@ $cli->output("cli.subversion.extracting", $config->get('path.base.local'));
 $svn = new SubversionRepository($config->get('path.base.local'), $config->get('path.base.svn'));
 $job = $svn->extract($cli->getRevision());
 
+foreach($job->getFilesToUpload() as $file) {
+    $cli->output("cli.job.found.upload", $file);
+}
+
+foreach($job->getFilesToDelete() as $file) {
+    $cli->output("cli.job.found.delete", $file);
+}
+
+if(!$cli->confirm()) {
+    $cli->error('cli.aborted');
+}
+
 $ftp = new FTPClient();
 
 $cli->output("cli.ftp.connecting", $config->get('ftp.host'));
@@ -37,14 +49,34 @@ $base_local = $config->get('path.base.local');
 
 foreach($job->getFilesToUpload() as $file) {
     $cli->output("cli.ftp.uploading", $file);
-    $ftp->put($file, $base_local, $base_ftp);
-    $cli->output("cli.ok");
+    
+    try {
+        $ftp->put($file, $base_local, $base_ftp);
+        $cli->output("cli.ok");
+    }
+    catch(Exception $ex) {
+        $cli->output('cli.ftp.uploading.error', $ex->getMessage());
+        if(!$cli->confirm()) {
+            $cli->error("cli.aborted");
+        }
+    }
 }
 
 foreach($job->getFilesToDelete() as $file) {
     $cli->output("cli.ftp.deleting", $file);
-    $ftp->delete($file, $base_ftp);
-    $cli->output("cli.ok");
+    
+    try {
+        $ftp->delete($file, $base_ftp);
+        $cli->output("cli.ok");
+    }
+    catch(Exception $ex) {
+        $cli->output('cli.ftp.deleting.error', $ex->getMessage());
+        if(!$cli->confirm()) {
+            $cli->error("cli.aborted");
+        }
+    }
 }
 
 $ftp->close();
+
+$cli->output("cli.done");
