@@ -27,7 +27,3 @@ $m['cli.ftp.uploading'] = "Uploading '%s'";
 $m['cli.ftp.uploading.error'] = "Error while uploading the file: '%s'";
 $m['cli.ftp.deleting'] = "Deleting '%s'";
 $m['cli.ftp.deleting.error'] = "Error while deleting the file: '%s'";
-
-
-
-
