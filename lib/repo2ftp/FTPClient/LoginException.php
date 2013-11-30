@@ -1,6 +1,6 @@
 <?php
 
-namespace svn2ftp\FTPClient;
+namespace repo2ftp\FTPClient;
 
 require_once 'FTPException.php';
 

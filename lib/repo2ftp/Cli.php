@@ -1,16 +1,16 @@
 <?php
 
-namespace svn2ftp;
+namespace repo2ftp;
 
 require_once('Locale.php');
 require_once('Config.php');
 
-use svn2ftp\Config\MissingOptionException;
-use svn2ftp\Config\OptionNotFoundException;
+use repo2ftp\Config\MissingOptionException;
+use repo2ftp\Config\OptionNotFoundException;
 
 class Cli {  
     
-    private $_info = "SVN2FTP %s - Eugenio Bonifacio http://www.eugeniobonifacio.com";
+    private $_info = "REPO2FTP %s - Eugenio Bonifacio http://www.eugeniobonifacio.com";
     
     private $_version_major = 1;
     private $_version_minor = 0;
@@ -25,13 +25,18 @@ class Cli {
     protected $_project;
     protected $_revision;
     
+    protected $_debug;
+    
     protected $_base_path;
     
     public function __construct($base_path) {
         
         // EXTRACT CLI OPTIONS
-        $opts = 'l:r:c:';
+        $opts = 'l:r:c:d:';
         $cli_options = getopt($opts);
+        
+        // DEBUG
+        $this->_debug = array_key_exists('d', $cli_options);
         
         // LANGUAGE
         if(array_key_exists('l', $cli_options)) {
@@ -101,12 +106,12 @@ class Cli {
         }
         
         if($rev_error) {
-            $this->error("cli.subversion.revision.invalid");
+            $this->error("cli.repository.revision.invalid");
         }
         
         $this->_revision = $revision;
         
-        $this->output("cli.subversion.revision", $revision);
+        $this->output("cli.repository.revision", $revision);
     }
     
     public function getProject() {
@@ -115,6 +120,10 @@ class Cli {
     
     public function getRevision() {
         return $this->_revision;
+    }
+    
+    public function isDebug() {
+        return $this->_debug;
     }
     
     /**

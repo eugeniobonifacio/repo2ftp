@@ -1,12 +1,14 @@
 <?php
 
-namespace svn2ftp;
+namespace repo2ftp;
 
 require_once 'Job.php';
+require_once 'Repository.php';
 
-use svn2ftp\Job;
+use repo2ftp\Job;
+use repo2ftp\Repository;
 
-class SubversionRepository {
+class SubversionRepository implements Repository {
     
     private $_base_local;
     private $_base_svn;

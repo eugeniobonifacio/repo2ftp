@@ -1,4 +1,4 @@
-SVN2FTP - Command Line PHP tool for uploading specific SVN changesets to an FTP server
+REPO2FTP - Command Line PHP tool for uploading specific repository changesets to an FTP server
 Copyright (C) 2013  Eugenio Bonifacio
 
 This program is free software; you can redistribute it and/or

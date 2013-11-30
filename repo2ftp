@@ -1,15 +1,14 @@
 #!/usr/bin/php
 <?php
 
-use svn2ftp\Cli;
-use svn2ftp\SubversionRepository;
-use svn2ftp\FTPClient;
+use repo2ftp\Cli;
+use repo2ftp\SubversionRepository;
+use repo2ftp\FTPClient;
 
-$version = "v1.0.0";
+$version = "v2.0.0";
 
-require('lib/svn2ftp/Cli.php');
-require('lib/svn2ftp/SubversionRepository.php');
-require('lib/svn2ftp/FTPClient.php');
+require('lib/repo2ftp/Cli.php');
+require('lib/repo2ftp/FTPClient.php');
 
 $base_path = dirname(__FILE__);
 
@@ -17,10 +16,19 @@ $cli = new Cli($base_path);
 
 $config = $cli->getConfig();
 
-$cli->output("cli.subversion.extracting", $config->get('path.base.local'));
+$cli->output("cli.repository.extracting", $config->get('path.base.local'));
 
-$svn = new SubversionRepository($config->get('path.base.local'), $config->get('path.base.svn'));
-$job = $svn->extract($cli->getRevision());
+$repo = null;
+if($config->get('repository.type') == 'svn') {
+    require('lib/repo2ftp/Repository/SubversionRepository.php');
+    $repo = new SubversionRepository($config->get('path.base.local'), $config->get('path.base.repository'));
+}
+else if($config->get('repository.type') == 'git') {
+    require('lib/repo2ftp/Repository/GitRepository.php');
+    $repo = new GitRepository($config->get('path.base.local'), $config->get('path.base.repository'));
+}
+
+$job = $repo->extract($cli->getRevision());
 
 foreach($job->getFilesToUpload() as $file) {
     $cli->output("cli.job.found.upload", $file);
@@ -28,6 +36,11 @@ foreach($job->getFilesToUpload() as $file) {
 
 foreach($job->getFilesToDelete() as $file) {
     $cli->output("cli.job.found.delete", $file);
+}
+
+if($cli->isDebug()) {
+    $cli->message('Debug mode');
+    $cli->error('cli.aborted');
 }
 
 if(!$cli->confirm()) {

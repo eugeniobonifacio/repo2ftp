@@ -1,16 +1,16 @@
 <?php
 
-namespace svn2ftp;
+namespace repo2ftp;
 
 require_once 'FTPClient/ConnectionException.php';
 require_once 'FTPClient/LoginException.php';
 require_once 'FTPClient/CommandException.php';
 require_once 'FTPClient/FileNotFoundException.php';
 
-use svn2ftp\FTPClient\ConnectionException;
-use svn2ftp\FTPClient\LoginException;
-use svn2ftp\FTPClient\CommandException;
-use svn2ftp\FTPClient\FileNotFoundException;
+use repo2ftp\FTPClient\ConnectionException;
+use repo2ftp\FTPClient\LoginException;
+use repo2ftp\FTPClient\CommandException;
+use repo2ftp\FTPClient\FileNotFoundException;
 
 class FTPClient {
 

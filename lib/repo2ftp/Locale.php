@@ -1,6 +1,6 @@
 <?php
 
-namespace svn2ftp;
+namespace repo2ftp;
 
 use \Exception;
 

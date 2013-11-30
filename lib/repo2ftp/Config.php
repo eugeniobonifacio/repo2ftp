@@ -1,12 +1,12 @@
 <?php
 
-namespace svn2ftp;
+namespace repo2ftp;
 
 require_once 'Config/MissingOptionException.php';
 require_once 'Config/OptionNotFoundException.php';
 
-use svn2ftp\Config\MissingOptionException;
-use svn2ftp\Config\OptionNotFoundException;
+use repo2ftp\Config\MissingOptionException;
+use repo2ftp\Config\OptionNotFoundException;
 
 class Config {
     
@@ -15,7 +15,7 @@ class Config {
         'ftp.username', 
         'ftp.password', 
         'path.base.local', 
-        'path.base.svn', 
+        'path.base.repository', 
         'path.base.ftp'
     );
     

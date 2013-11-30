@@ -14,9 +14,9 @@ $m['cli.confirm.continue'] = "Continue? %s/%s";
 $m['cli.confirm.answer.yes.short'] = "Y";
 $m['cli.confirm.answer.no.short'] = "N";
 
-$m['cli.subversion.revision'] = "Revision to extract: %s";
-$m['cli.subversion.revision.invalid'] = "Not valid revision format: `REV_START[:REV_END]`";
-$m['cli.subversion.extracting'] = "Retrieving data from SVN repo located at '%s'";
+$m['cli.repository.revision'] = "Revision to extract: %s";
+$m['cli.repository.revision.invalid'] = "Not valid revision format: `REV_START[:REV_END]`";
+$m['cli.repository.extracting'] = "Retrieving data from repository located at '%s'";
 
 $m['cli.job.found.upload'] = "+ %s";
 $m['cli.job.found.delete'] = "- %s";
