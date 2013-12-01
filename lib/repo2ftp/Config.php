@@ -14,6 +14,7 @@ class Config {
         'ftp.host', 
         'ftp.username', 
         'ftp.password', 
+        'repository.type', 
         'path.base.local', 
         'path.base.repository', 
         'path.base.ftp'

@@ -71,47 +71,20 @@ class Cli {
             catch(MissingOptionException $ex) {
                 $this->error("cli.config.option.missing", $ex->getOption());
             }
-            
+
             $this->output("cli.ok");
         }
         else {
             $this->error("cli.config.missing");
         }
         
-        $revision = '';
-        $opts = array();
-        if(array_key_exists('r', $cli_options)) {
-            $opts = explode(':', $cli_options['r']);
-        }
-
-        $rev_error = false;
-        
-        $rev_start = strtoupper($opts[0]) == 'HEAD' ? 'HEAD' : (int)$opts[0];
-        
-        if($rev_start == 'HEAD') {
-            $revision = $rev_start;
-        }
-        elseif(is_numeric($rev_start)) {
-            $rev_end = strtoupper($opts[1]) == 'HEAD' ? 'HEAD' : (int)$opts[1];
-            
-            if($rev_end == 'HEAD' || (is_numeric($rev_end) && $rev_end > $rev_start)) {
-                $revision = $rev_start . ':' . $rev_end;
-            }
-            else {
-                $rev_error = true;
-            }
-        }
-        else {
-            $rev_error = true;
+        if(!array_key_exists('r', $cli_options)) {
+            $this->error("cli.repository.revision.missing");            
         }
         
-        if($rev_error) {
-            $this->error("cli.repository.revision.invalid");
-        }
+        $this->_revision = $cli_options['r'];
         
-        $this->_revision = $revision;
-        
-        $this->output("cli.repository.revision", $revision);
+//        $this->output("cli.repository.revision", $this->_revision);
     }
     
     public function getProject() {

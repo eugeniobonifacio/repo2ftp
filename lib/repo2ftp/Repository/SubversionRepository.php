@@ -1,12 +1,14 @@
 <?php
 
-namespace repo2ftp;
+namespace repo2ftp\Repository;
 
 require_once 'Job.php';
 require_once 'Repository.php';
+require_once 'Repository/RevisionException.php';
 
 use repo2ftp\Job;
 use repo2ftp\Repository;
+use repo2ftp\Repository\RevisionException;
 
 class SubversionRepository implements Repository {
     
@@ -17,11 +19,12 @@ class SubversionRepository implements Repository {
         $this->_base_local = $base_local;
         $this->_base_svn = $base_svn;
     }
-    
+
     /**
      * 
-     * @param string $revision revision range in the form of `svn log` command `-r` option
-     * @return \svn2ftp\Job
+     * @param string $revision revision range in the form of repository type
+     * @throws \repo2ftp\Repository\RevisionException
+     * @return \repo2ftp\Job
      */
     public function extract($revision) {
         $base_local = $this->_base_local;
@@ -57,5 +60,40 @@ class SubversionRepository implements Repository {
         }
 
         return $job;
+    }
+    
+    /**
+     * @param string $revision Revision range to parse and validate
+     * @throws \repo2ftp\Repository\RevisionException
+     */
+    public function parseRevision($revision) {
+        $opts = explode(':', $revision);
+        
+        $rev_error = false;
+        
+        $rev_start = strtoupper($opts[0]) == 'HEAD' ? 'HEAD' : (int)$opts[0];
+        
+        if($rev_start == 'HEAD') {
+            $revision = $rev_start;
+        }
+        elseif(is_numeric($rev_start)) {
+            $rev_end = strtoupper($opts[1]) == 'HEAD' ? 'HEAD' : (int)$opts[1];
+            
+            if($rev_end == 'HEAD' || (is_numeric($rev_end) && $rev_end > $rev_start)) {
+                $revision = $rev_start . ':' . $rev_end;
+            }
+            else {
+                $rev_error = true;
+            }
+        }
+        else {
+            $rev_error = true;
+        }
+        
+        if($rev_error) {
+            throw new RevisionException();
+        }
+        
+        return $revision;
     }
 }

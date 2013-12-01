@@ -1,16 +1,22 @@
 #!/usr/bin/php
 <?php
 
-use repo2ftp\Cli;
-use repo2ftp\SubversionRepository;
-use repo2ftp\FTPClient;
-
 $version = "v2.0.0";
 
-require('lib/repo2ftp/Cli.php');
-require('lib/repo2ftp/FTPClient.php');
-
 $base_path = dirname(__FILE__);
+
+// Ensure library/ is on include_path
+set_include_path(implode(PATH_SEPARATOR, array(
+    realpath($base_path . '/lib'),
+    get_include_path(),
+)));
+
+require('repo2ftp/Cli.php');
+require('repo2ftp/FTPClient.php');
+
+use repo2ftp\Cli;
+use repo2ftp\FTPClient;
+use repo2ftp\Repository\RevisionException;
 
 $cli = new Cli($base_path);
 
@@ -20,15 +26,23 @@ $cli->output("cli.repository.extracting", $config->get('path.base.local'));
 
 $repo = null;
 if($config->get('repository.type') == 'svn') {
-    require('lib/repo2ftp/Repository/SubversionRepository.php');
-    $repo = new SubversionRepository($config->get('path.base.local'), $config->get('path.base.repository'));
+    require('repo2ftp/Repository/SubversionRepository.php');
+    $repo = new \repo2ftp\Repository\SubversionRepository($config->get('path.base.local'), $config->get('path.base.repository'));
 }
 else if($config->get('repository.type') == 'git') {
-    require('lib/repo2ftp/Repository/GitRepository.php');
-    $repo = new GitRepository($config->get('path.base.local'), $config->get('path.base.repository'));
+    require('repo2ftp/Repository/GitRepository.php');
+    $repo = new \repo2ftp\Repository\GitRepository($config->get('path.base.local'), $config->get('path.base.repository'));
 }
 
-$job = $repo->extract($cli->getRevision());
+$revision = null;
+try {
+    $revision = $repo->parseRevision($cli->getRevision());
+}
+catch(RevisionException $ex) {
+    $cli->error('cli.repository.revision.invalid');
+}
+
+$job = $repo->extract($revision);
 
 foreach($job->getFilesToUpload() as $file) {
     $cli->output("cli.job.found.upload", $file);

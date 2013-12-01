@@ -15,7 +15,8 @@ $m['cli.confirm.answer.yes.short'] = "S";
 $m['cli.confirm.answer.no.short'] = "N";
 
 $m['cli.repository.revision'] = "Revisione da estrarre: %s";
-$m['cli.repository.revision.invalid'] = "Formato della revisione non valido: `REV_START[:REV_END]`";
+$m['cli.repository.revision.invalid'] = "Formato della revisione non valido";
+$m['cli.repository.revision.missing'] = "Manca la revisione da estrarre";
 $m['cli.repository.extracting'] = "Recupero dati da '%s'";
 
 $m['cli.job.found.upload'] = "+ %s";
