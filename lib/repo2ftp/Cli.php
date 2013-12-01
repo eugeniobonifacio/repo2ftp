@@ -32,7 +32,7 @@ class Cli {
     public function __construct($base_path) {
         
         // EXTRACT CLI OPTIONS
-        $opts = 'l:r:c:d:';
+        $opts = 'l:r:c:d';
         $cli_options = getopt($opts);
         
         // DEBUG

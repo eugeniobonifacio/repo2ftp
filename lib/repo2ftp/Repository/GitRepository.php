@@ -28,7 +28,7 @@ class GitRepository implements Repository {
         $base_local = $this->_base_local;
         $base_repo = $this->_base_repo;
         
-        $repo_command = "git --git-dir={$base_local}/.git --work-tree={$base_local} log $revision --name-status";
+        $repo_command = "git --git-dir={$base_local}/.git --work-tree={$base_local} log $revision --name-status --reverse";
         
         $output = shell_exec($repo_command);
 
@@ -36,8 +36,6 @@ class GitRepository implements Repository {
 
         $job = new Job();
         for($i = 3; $i < count($lines); $i++) {
-            
-            var_dump($lines[$i]);
             
             if(preg_match('/^([AMD]{1})(?:\s+)([^\(\)]*)(?: \(.*\))?$/', $lines[$i], $matched)) {
                 if($matched[1] == 'A' || $matched[1] == 'M') {
@@ -69,34 +67,7 @@ class GitRepository implements Repository {
      * @param string $revision Revision range to parse and validate
      * @throws \repo2ftp\Repository\RevisionException
      */
-    public function parseRevision($revision) {
-//        $opts = explode(':', $revision);
-//        
-//        $rev_error = false;
-//        
-//        $rev_start = strtoupper($opts[0]) == 'HEAD' ? 'HEAD' : (int)$opts[0];
-//        
-//        if($rev_start == 'HEAD') {
-//            $revision = $rev_start;
-//        }
-//        elseif(is_numeric($rev_start)) {
-//            $rev_end = strtoupper($opts[1]) == 'HEAD' ? 'HEAD' : (int)$opts[1];
-//            
-//            if($rev_end == 'HEAD' || (is_numeric($rev_end) && $rev_end > $rev_start)) {
-//                $revision = $rev_start . ':' . $rev_end;
-//            }
-//            else {
-//                $rev_error = true;
-//            }
-//        }
-//        else {
-//            $rev_error = true;
-//        }
-//        
-//        if($rev_error) {
-//            throw new RevisionException();
-//        }
-        
+    public function parseRevision($revision) {        
         return $revision;
     }
 }
