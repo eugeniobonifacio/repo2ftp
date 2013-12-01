@@ -21,6 +21,8 @@ Create a folder named "config" at the same level of repo2ftp. Inside create an "
 > ftp.username = "username"  
 > ftp.password = "password"  
 >  
+> repository.type = "svn" ; or "git"
+>  
 > path.base.local = "/the/absolute/path/of/the/project"  
 > path.base.repository = "/trunk"  
 > path.base.ftp = "/httpdocs/project"  
