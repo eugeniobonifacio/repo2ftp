@@ -2,13 +2,13 @@
 
 namespace repo2ftp\Repository;
 
-require_once 'Job.php';
-require_once 'Repository.php';
-require_once 'Repository/RevisionException.php';
-
 use repo2ftp\Job;
 use repo2ftp\Repository;
 use repo2ftp\Repository\RevisionException;
+
+require_once 'repo2ftp/Job.php';
+require_once 'repo2ftp/Repository.php';
+require_once 'repo2ftp/Repository/RevisionException.php';
 
 class SubversionRepository implements Repository {
     
