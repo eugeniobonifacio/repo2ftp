@@ -48,14 +48,13 @@ class FTPClient {
         $this->chdir($base_ftp);
         
         $path = explode('/', $file);
-        array_shift($path);
-
+        
         $conn_id = $this->_ftp_handle;
         
         $path_local = $base_local;
         $path_remote = $base_ftp;
         
-        $path_remote_full = $base_ftp . $file;
+        $path_remote_full = $base_ftp . '/' . $file;
 
         foreach($path as $dir) {
             $path_remote_prev = $path_remote;
