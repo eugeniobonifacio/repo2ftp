@@ -17,7 +17,7 @@ class SubversionRepository implements Repository {
     
     public function __construct($base_local, $base_svn) {
         $this->_base_local = $base_local;
-        $this->_base_svn = $base_svn;
+        $this->_base_svn = $base_svn . "/";
     }
 
     /**
