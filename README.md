@@ -7,11 +7,11 @@ You can manage several projects with the same tool.
 
 ### Usage: 
 
-repo2ftp -c project_config_name -r rev_start:rev_end
+repo2ftp -c project_config_name [-m module] -r rev_start:rev_end
 
 - all files marked as (M)odified or (A)dded will be uploaded
 - all files marked as (D)eleted will be deleted from the remote side
-
+- if 'module' option is not provided, 'base' is assumed
 
 ### Multi-project setup:
 
@@ -21,11 +21,12 @@ Create a folder named "config" at the same level of repo2ftp. Inside create an "
 > ftp.username = "username"  
 > ftp.password = "password"  
 >  
-> repository.type = "svn" ; or "git"
->  
-> path.base.local = "/the/absolute/path/of/the/project"  
-> path.base.repository = "/trunk"  
-> path.base.ftp = "/httpdocs/project"  
+> module.base.type = "svn" ; or "git"
+> module.base.path.local = "/the/absolute/path/of/the/project"  
+> module.base.path.repository = "/trunk"  
+> module.base.path.ftp = "/httpdocs/project"  
+> module.base.path.exclude[] = "/^example\//"  
+> module.base.path.exclude[] = "/^tmp\//"  
 
 #### Example:
 
@@ -40,6 +41,7 @@ the absolute path of the project is "/home/user/work/hello_world" and contains t
 > .svn  
 > css/  
 > images/  
+> uploads/  
 > index.php  
 
 
@@ -58,6 +60,8 @@ your ini file should look like this:
 > ftp.username = "your_username"  
 > ftp.password = "your_password"  
 >  
-> path.base.local = "/home/user/work/hello_world"  
-> path.base.repository = "/trunk"  
-> path.base.ftp = "/httpdocs"  
+> module.base.type = "svn"
+> module.base.path.local = "/home/user/work/hello_world"  
+> module.base.path.repository = "/trunk"  
+> module.base.path.ftp = "/httpdocs"  
+> module.base.path.exclude[] = "/^uploads\//"  
