@@ -7,10 +7,11 @@ You can manage several projects with the same tool.
 
 ### Usage: 
 
-repo2ftp -c project_config_name [-m module] -r rev_start:rev_end
+repo2ftp -c project_config_name [-m module] -r rev_range
 
 - all files marked as (M)odified or (A)dded will be uploaded
 - all files marked as (D)eleted will be deleted from the remote side
+- 'rev_range' is in the same form used by the VCS
 - if 'module' option is not provided, 'base' is assumed
 
 ### Multi-project setup:
