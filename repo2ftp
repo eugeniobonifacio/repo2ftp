@@ -21,20 +21,30 @@ use repo2ftp\Repository\RevisionException;
 $cli = new Cli($base_path);
 
 $config = $cli->getConfig();
+$module = $cli->getModule();
 
-$cli->output("cli.repository.extracting", $config->get('path.base.local'));
+$module_prefix = 'module.' . $module;
+
+$path_repository = $module_prefix . '.path.repository';
+$path_ftp = $module_prefix . '.path.ftp';
+$path_local = $module_prefix . '.path.local';
+
+$path_exclude = $module_prefix . '.path.exclude';
+
+$cli->output("cli.repository.extracting", $config->get($path_local));
 
 $repo = null;
-if($config->get('repository.type') == 'svn') {
+if($config->get($module_prefix . '.type') == 'svn') {
     require('repo2ftp/Repository/SubversionRepository.php');
-    $repo = new \repo2ftp\Repository\SubversionRepository($config->get('path.base.local'), $config->get('path.base.repository'));
+    $repo = new \repo2ftp\Repository\SubversionRepository($config->get($path_local), $config->get($path_repository));
 }
-else if($config->get('repository.type') == 'git') {
+else if($config->get($module_prefix . '.type') == 'git') {
     require('repo2ftp/Repository/GitRepository.php');
-    $repo = new \repo2ftp\Repository\GitRepository($config->get('path.base.local'), $config->get('path.base.repository'));
+    $repo = new \repo2ftp\Repository\GitRepository($config->get($path_local), $config->get($path_repository));
 }
 
 $revision = null;
+
 try {
     $revision = $repo->parseRevision($cli->getRevision());
 }
@@ -42,7 +52,13 @@ catch(RevisionException $ex) {
     $cli->error('cli.repository.revision.invalid');
 }
 
-$job = $repo->extract($revision);
+$exclude = array();
+
+if($config->exists($path_exclude)) {
+    $exclude = $config->get($path_exclude);
+}
+
+$job = $repo->extract($revision, $exclude);
 
 foreach($job->getFilesToUpload() as $file) {
     $cli->output("cli.job.found.upload", $file);
@@ -71,8 +87,8 @@ $cli->output("cli.ftp.authenticating", $config->get('ftp.username'));
 $ftp->login($config->get('ftp.username'), $config->get('ftp.password'));
 $cli->output("cli.ok");
 
-$base_ftp = $config->get('path.base.ftp');
-$base_local = $config->get('path.base.local');
+$base_ftp = $config->get($path_ftp);
+$base_local = $config->get($path_local);
 
 foreach($job->getFilesToUpload() as $file) {
     $cli->output("cli.ftp.uploading", $file);

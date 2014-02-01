@@ -17,5 +17,5 @@ interface Repository {
      * @throws \repo2ftp\Repository\RevisionException
      * @return \repo2ftp\Job
      */
-    public function extract($revision);
+    public function extract($revision, $exclude = array());
 }

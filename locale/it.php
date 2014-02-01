@@ -2,6 +2,8 @@
 
 $m['cli.version'] = "v%s";
 
+$m['cli.module.name'] = "Modulo utilizzato '%s'";
+
 $m['cli.config.file'] = "File di configurazione utilizzato: %s";
 $m['cli.config.missing'] = "Utilizzare l'opzione '-c' per specificare un progetto";
 $m['cli.config.option.missing'] = "Manca l'opzione necessaria '%s'";

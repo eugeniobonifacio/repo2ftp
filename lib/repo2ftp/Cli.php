@@ -23,6 +23,7 @@ class Cli {
     protected $_locale;
     protected $_config;
     protected $_project;
+    protected $_module;
     protected $_revision;
     
     protected $_debug;
@@ -32,7 +33,7 @@ class Cli {
     public function __construct($base_path) {
         
         // EXTRACT CLI OPTIONS
-        $opts = 'l:r:c:d';
+        $opts = 'l:r:c:m:d';
         $cli_options = getopt($opts);
         
         // DEBUG
@@ -44,6 +45,14 @@ class Cli {
         }
         else {
             $this->_locale = new Locale();
+        }
+        
+        // MODULE
+        if(array_key_exists('m', $cli_options)) {
+            $this->_module = $cli_options['m'];
+        }
+        else {
+            $this->_module = 'base';
         }
         
         // WELCOME MESSAGE
@@ -58,6 +67,8 @@ class Cli {
         
         $this->_base_path = $base_path;
 
+        $this->output("cli.module.name", $this->_module);
+        
         if(array_key_exists('c', $cli_options)) {
             $this->_project = $cli_options['c'];
 
@@ -66,7 +77,7 @@ class Cli {
             $this->output("cli.config.file", $config_path);
 
             try {
-                $this->_config = new Config($config_path);
+                $this->_config = new Config($this->_module, $config_path);
             }
             catch(MissingOptionException $ex) {
                 $this->error("cli.config.option.missing", $ex->getOption());
@@ -89,6 +100,10 @@ class Cli {
     
     public function getProject() {
         return $this->_project;
+    }
+    
+    public function getModule() {
+        return $this->_module;
     }
     
     public function getRevision() {

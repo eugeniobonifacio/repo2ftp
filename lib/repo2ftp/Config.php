@@ -14,25 +14,29 @@ class Config {
         'ftp.host', 
         'ftp.username', 
         'ftp.password', 
-        'repository.type', 
-        'path.base.local', 
-        'path.base.repository', 
-        'path.base.ftp'
+        'module.%module%.type', 
+        'module.%module%.path.local', 
+        'module.%module%.path.repository', 
+        'module.%module%.path.ftp'
     );
     
     private $options_optional = array(
         'config.name', 
-        'config.description'
+        'config.description',
+        'module.%module%.path.exclude'
     );
     
     private $_options = array();
 
-    public function __construct($path) {
+    public function __construct($module, $path) {
         $config_options = parse_ini_file($path);   
 
         // READING
         $this->_options = array();
         foreach ($this->options_mandatory as $option) {
+            
+            $option = str_replace('%module%', $module, $option);
+            
             if(!array_key_exists($option, $config_options)) {
                 throw new MissingOptionException($option);
             }
@@ -41,6 +45,9 @@ class Config {
         }
         
         foreach ($this->options_optional as $option) {
+            
+            $option = str_replace('%module%', $module, $option);
+            
             if(array_key_exists($option, $config_options)) {
                 $this->_options[$option] = $config_options[$option];
             }
@@ -53,6 +60,10 @@ class Config {
         }
         
         return $this->_options[$key];
+    }
+    
+    public function exists($key) {
+        return array_key_exists($key, $this->_options);
     }
 }
 

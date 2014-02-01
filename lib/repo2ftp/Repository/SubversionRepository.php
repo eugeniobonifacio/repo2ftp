@@ -26,7 +26,7 @@ class SubversionRepository implements Repository {
      * @throws \repo2ftp\Repository\RevisionException
      * @return \repo2ftp\Job
      */
-    public function extract($revision) {
+    public function extract($revision, $exclude = array()) {
         $base_local = $this->_base_local;
         $base_svn = $this->_base_svn;
         
@@ -38,23 +38,37 @@ class SubversionRepository implements Repository {
 
         $job = new Job();
         for($i = 3; $i < count($lines); $i++) {
-            if(preg_match('/^   ([A-Z]{1}) (\/[^\(\)]*)(?: \(.*\))?$/', $lines[$i], $matched)) {                
-                if($matched[1] == 'A' || $matched[1] == 'M') {
-
-                    $file = $matched[2];
-                    if(strpos($file, $base_svn) === 0) {
-
-                        $file_relative_path = substr($file, strlen($base_svn));
-                        $job->addToUpload($file_relative_path);
+            if(preg_match('/^   ([A-Z]{1}) (\/[^\(\)]*)(?: \(.*\))?$/', $lines[$i], $matched)) {
+                $file = $matched[2];
+                
+                $file_relative_path = null;
+                if(empty($base_svn)) {
+                    $file_relative_path = $file;
+                }
+                elseif(strpos($file, $base_svn) !== 0) {
+                    $file_relative_path = substr($file, strlen($base_svn));
+                }
+                else {
+                    continue;
+                }                
+                
+                $skip = false;
+                foreach($exclude as $excluded) {
+                    if(preg_match($excluded, $file_relative_path)) {
+                        $skip = true;
+                        break;
                     }
                 }
+                
+                if($skip) {
+                    continue;
+                }
+                
+                if($matched[1] == 'A' || $matched[1] == 'M') {
+                    $job->addToUpload($file_relative_path);
+                }
                 elseif($matched[1] == 'D') {
-                    $file = $matched[2];
-                    if(strpos($file, $base_svn) === 0) {
-
-                        $file_relative_path = substr($file, strlen($base_svn));
-                        $job->addToDelete($file_relative_path);
-                    }
+                    $job->addToDelete($file_relative_path);
                 }
             }
         }

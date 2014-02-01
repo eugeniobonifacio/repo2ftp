@@ -24,7 +24,7 @@ class GitRepository implements Repository {
      * @param string $revision revision range in the form of `repo log` command `-r` option
      * @return \repo2ftp\Job
      */
-    public function extract($revision) {
+    public function extract($revision, $exclude = array()) {
         $base_local = $this->_base_local;
         $base_repo = $this->_base_repo;
         
@@ -38,24 +38,37 @@ class GitRepository implements Repository {
         for($i = 3; $i < count($lines); $i++) {
             
             if(preg_match('/^([AMD]{1})(?:\s+)([^\(\)]*)(?: \(.*\))?$/', $lines[$i], $matched)) {
-                if($matched[1] == 'A' || $matched[1] == 'M') {
 
-                    $file = $matched[2];
-                    if(empty($base_repo)) {
-                        $job->addToUpload($file);
-                    }
-                    elseif(strpos($file, $base_repo) === 0) {
-                        $file_relative_path = substr($file, strlen($base_repo));
-                        $job->addToUpload($file_relative_path);
+                $file = $matched[2];
+
+                $file_relative_path = null;
+                if(empty($base_repo)) {
+                    $file_relative_path = $file;
+                }
+                elseif(strpos($file, $base_repo) !== 0) {
+                    $file_relative_path = substr($file, strlen($base_repo));
+                }
+                else {
+                    continue;
+                }                
+                
+                $skip = false;
+                foreach($exclude as $excluded) {
+                    if(preg_match($excluded, $file_relative_path)) {
+                        $skip = true;
+                        break;
                     }
                 }
+                
+                if($skip) {
+                    continue;
+                }
+                
+                if($matched[1] == 'A' || $matched[1] == 'M') {
+                    $job->addToUpload($file_relative_path);
+                }
                 elseif($matched[1] == 'D') {
-                    $file = $matched[2];
-                    if(strpos($file, $base_repo) === 0) {
-
-                        $file_relative_path = substr($file, strlen($base_repo));
-                        $job->addToDelete($file_relative_path);
-                    }
+                    $job->addToDelete($file_relative_path);
                 }
             }
         }
