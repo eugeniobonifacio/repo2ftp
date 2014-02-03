@@ -91,17 +91,14 @@ class FTPClient {
     
     public function delete($file, $base_ftp) {
         $this->chdir($base_ftp);
-        
         $conn_id = $this->_ftp_handle;
         
         $path = explode('/', $file);
-        array_shift($path);
 
         $path_remote = $base_ftp;
 
         $is_file = false;
         foreach($path as $dir) {
-
             $ls = ftp_rawlist($conn_id, $path_remote);
 
             $dirs = array();
@@ -127,7 +124,7 @@ class FTPClient {
             }
         }
 
-        if($path_remote == $base_ftp . $file) {
+        if($path_remote == $base_ftp . '/' . $file) {
             if($is_file) {
                 if(@ftp_delete($conn_id, $path_remote) === false) {
                     throw new UnableToDeleteException('Cannot delete file');
