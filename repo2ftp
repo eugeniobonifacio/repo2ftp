@@ -91,16 +91,18 @@ $base_ftp = $config->get($path_ftp);
 $base_local = $config->get($path_local);
 
 foreach($job->getFilesToUpload() as $file) {
-    $cli->output("cli.ftp.uploading", $file);
-    
-    try {
-        $ftp->put($file, $base_local, $base_ftp);
-        $cli->output("cli.ok");
-    }
-    catch(Exception $ex) {
-        $cli->output('cli.ftp.uploading.error', $ex->getMessage());
-        if(!$cli->confirm()) {
-            $cli->error("cli.aborted");
+    while(true) {
+        $cli->output("cli.ftp.uploading", array($file, $base_local, $base_ftp));
+        try {
+            $ftp->put($file, $base_local, $base_ftp);
+            $cli->output("cli.ok");
+            break;
+        }
+        catch(Exception $ex) {
+            $cli->output('cli.ftp.uploading.error', $ex->getMessage());
+            if(!$cli->confirm()) {
+                $cli->error("cli.aborted");
+            }
         }
     }
 }
