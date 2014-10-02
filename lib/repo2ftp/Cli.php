@@ -13,7 +13,7 @@ class Cli {
     private $_info = "REPO2FTP %s - Eugenio Bonifacio http://www.eugeniobonifacio.com";
     
     private $_version_major = 2;
-    private $_version_minor = 0;
+    private $_version_minor = 1;
     private $_version_fix   = 0;
 
     /**
