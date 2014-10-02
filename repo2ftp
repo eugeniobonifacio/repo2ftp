@@ -1,8 +1,6 @@
 #!/usr/bin/php
 <?php
 
-$version = "v2.0.0";
-
 $base_path = dirname(__FILE__);
 
 // Ensure library/ is on include_path
@@ -90,18 +88,38 @@ $cli->output("cli.ok");
 $base_ftp = $config->get($path_ftp);
 $base_local = $config->get($path_local);
 
-foreach($job->getFilesToUpload() as $file) {
+$files = $job->getFilesToUpload();
+$i = 1;
+$count = count($files);
+foreach($files as $file) {
     while(true) {
+        $cli->output($i . "/" . $count);
         $cli->output("cli.ftp.uploading", array($file, $base_local, $base_ftp));
-        try {
+        try {            
             $ftp->put($file, $base_local, $base_ftp);
             $cli->output("cli.ok");
+            $i++;
             break;
         }
         catch(Exception $ex) {
             $cli->output('cli.ftp.uploading.error', $ex->getMessage());
+            
             if(!$cli->confirm()) {
                 $cli->error("cli.aborted");
+            }
+                        
+            $cli->output('cli.ftp.uploading.reconnect', $ex->getMessage());
+            
+            if($cli->confirm()) {
+                $ftp->close();
+                
+                $cli->output("cli.ftp.connecting", $config->get('ftp.host'));
+                $ftp->open($config->get('ftp.host'));
+                $cli->output("cli.ok");
+
+                $cli->output("cli.ftp.authenticating", $config->get('ftp.username'));
+                $ftp->login($config->get('ftp.username'), $config->get('ftp.password'));
+                $cli->output("cli.ok");
             }
         }
     }

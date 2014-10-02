@@ -27,6 +27,7 @@ $m['cli.job.found.delete'] = "- %s";
 $m['cli.ftp.connecting'] = "Connessione a '%s'";
 $m['cli.ftp.authenticating'] = "Accesso a '%s'";
 $m['cli.ftp.uploading'] = "Caricamento '%s' da '%s' a '%s'";
+$m['cli.ftp.reconnect'] = "Si vuole ripetere la connessione?";
 $m['cli.ftp.uploading.error'] = "Errore durante il caricamento: '%s'";
 $m['cli.ftp.deleting'] = "Eliminazione '%s'";
 $m['cli.ftp.deleting.error'] = "Errore durante l'eliminazione: '%s'";
