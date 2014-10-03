@@ -83,4 +83,18 @@ class GitRepository implements Repository {
     public function parseRevision($revision) {        
         return $revision;
     }
+
+    public function get($file, $revision = 'HEAD') {
+        $base_local = $this->_base_local;
+        $base_repo = $this->_base_repo;
+        
+        if($revision !== null) {
+            $file = $revision . ':' . $file;
+        }
+        
+        $repo_command = "git --git-dir={$base_local}/.git --work-tree={$base_local} show $file";
+        $output = shell_exec($repo_command);
+        
+        return $output;
+    }
 }

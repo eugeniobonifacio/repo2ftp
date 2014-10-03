@@ -18,4 +18,6 @@ interface Repository {
      * @return \repo2ftp\Job
      */
     public function extract($revision, $exclude = array());
+    
+    public function get($file, $revision = null);
 }

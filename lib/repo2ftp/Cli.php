@@ -30,10 +30,13 @@ class Cli {
     
     protected $_base_path;
     
+    protected $_upload_action;
+    protected $_delete_action;
+    
     public function __construct($base_path) {
         
         // EXTRACT CLI OPTIONS
-        $opts = 'l:r:c:m:d';
+        $opts = 'l:r:c:m:d:u:e';
         $cli_options = getopt($opts);
         
         // DEBUG
@@ -55,26 +58,39 @@ class Cli {
             $this->_module = 'base';
         }
         
+        $this->_upload_action = true;
+        $this->_delete_action = true;
+        
+        if(array_key_exists('u', $cli_options)) {
+            $this->_upload_action = true;
+            $this->_delete_action = false;
+        }
+        
+        if(array_key_exists('e', $cli_options)) {
+            $this->_upload_action = false;
+            $this->_delete_action = true;
+        }
+        
         // WELCOME MESSAGE
         $welcome_message = $this->getInfo();
         $line = str_pad('', strlen($welcome_message), '*');
         
-        $this->output(":");
-        $this->output(":" . $line);
-        $this->output(":" . $welcome_message);
-        $this->output(":" . $line);
-//        $this->output(":");
+        $this->outputnl(":");
+        $this->outputnl(":" . $line);
+        $this->outputnl(":" . $welcome_message);
+        $this->outputnl(":" . $line);
+//        $this->outputnl(":");
         
         $this->_base_path = $base_path;
 
-        $this->output("cli.module.name", $this->_module);
+        $this->outputnl("cli.module.name", $this->_module);
         
         if(array_key_exists('c', $cli_options)) {
             $this->_project = $cli_options['c'];
 
             $config_path = realpath($this->_base_path . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . $this->_project . '.ini');
 
-            $this->output("cli.config.file", $config_path);
+            $this->outputnl("cli.config.file", $config_path);
 
             try {
                 $this->_config = new Config($this->_module, $config_path);
@@ -83,7 +99,7 @@ class Cli {
                 $this->error("cli.config.option.missing", $ex->getOption());
             }
 
-            $this->output("cli.ok");
+            $this->outputnl("cli.ok");
         }
         else {
             $this->error("cli.config.missing");
@@ -95,7 +111,7 @@ class Cli {
         
         $this->_revision = $cli_options['r'];
         
-//        $this->output("cli.repository.revision", $this->_revision);
+//        $this->outputnl("cli.repository.revision", $this->_revision);
     }
     
     public function getProject() {
@@ -108,6 +124,14 @@ class Cli {
     
     public function getRevision() {
         return $this->_revision;
+    }
+    
+    public function haveToUpload() {
+        return $this->_upload_action;
+    }
+    
+    public function haveToDelete() {
+        return $this->_delete_action;
     }
     
     public function isDebug() {
@@ -129,7 +153,7 @@ class Cli {
     }
     
     public function confirm() {
-        $this->output("cli.confirm.continue", array($this->message('cli.confirm.answer.yes.short'), $this->message('cli.confirm.answer.no.short')));
+        $this->outputnl("cli.confirm.continue", array($this->message('cli.confirm.answer.yes.short'), $this->message('cli.confirm.answer.no.short')));
         return strcasecmp($this->prompt(), $this->message('cli.confirm.answer.yes.short')) === 0;
     }
     
@@ -146,12 +170,16 @@ class Cli {
     }
     
     public function output($message, $args = array()) {
+        echo $this->message($message, $args);
+    }
+    
+    public function outputnl($message, $args = array()) {
         echo $this->message($message, $args) . "\n";
     }
     
     public function error($message, $args = array()) {
-        $this->output($message, $args);
-        $this->output(":");
+        $this->outputnl($message, $args);
+        $this->outputnl(":");
         exit();
     }
     

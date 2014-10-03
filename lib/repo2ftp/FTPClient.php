@@ -6,11 +6,13 @@ require_once 'FTPClient/ConnectionException.php';
 require_once 'FTPClient/LoginException.php';
 require_once 'FTPClient/CommandException.php';
 require_once 'FTPClient/FileNotFoundException.php';
+require_once 'FTPClient/UnableToDeleteException.php';
 
 use repo2ftp\FTPClient\ConnectionException;
 use repo2ftp\FTPClient\LoginException;
 use repo2ftp\FTPClient\CommandException;
 use repo2ftp\FTPClient\FileNotFoundException;
+use repo2ftp\FTPClient\UnableToDeleteException;
 
 class FTPClient {
 
@@ -21,13 +23,13 @@ class FTPClient {
         $this->_ftp_handle = ftp_connect($host, $port);
         
         if($this->_ftp_handle === false) {
-            throw new ConnectionException();
+            throw new ConnectionException("Cannot open connection");
         }
     }
     
     public function login($username, $password) {
         if(@ftp_login($this->_ftp_handle, $username, $password) === false) {
-            throw new LoginException();
+            throw new LoginException("Wrong username or password");
         }
     }
     
@@ -37,56 +39,58 @@ class FTPClient {
     
     public function chdir($path) {
         if(!@ftp_chdir($this->_ftp_handle, $path)) {
-            throw new CommandException();
+            throw new CommandException("Cannot chdir to $path");
         }
         
         $this->_path = $path;
     }
     
-    public function put($file, $base_local, $base_ftp) {
+    public function mkdir($path_relative, $path_base = '.') {
         
-        $this->chdir($base_ftp);
+        $this->chdir($path_base);
         
-        $path = explode('/', $file);
+        $path = explode('/', $path_relative);
         
         $conn_id = $this->_ftp_handle;
         
-        $path_local = $base_local;
-        $path_remote = $base_ftp;
-        
-        $path_remote_full = $base_ftp . '/' . $file;
+        $path_remote = $path_base;
 
         foreach($path as $dir) {
             $path_remote_prev = $path_remote;
 
-            $path_local .= '/' . $dir;
             $path_remote .= '/' . $dir;
 
-            if(is_dir($path_local)) {
-                $ls = ftp_nlist($conn_id, $path_remote_prev);
+            $ls = ftp_nlist($conn_id, $path_remote_prev);
 
-                if($ls === false) {
-                    throw new ConnectionException();
-                }
-                
-                if(!in_array($path_remote, $ls)) {
-                    ftp_mkdir($conn_id, $dir);
-                }
-                else {
-                    ftp_chdir($conn_id, $dir);
+            if($ls === false) {
+                throw new CommandException("Cannot list folder content $path_remote_prev");
+            }
+
+            if(!in_array($path_remote, $ls)) {
+                if(false === ftp_mkdir($conn_id, $dir)) {
+                    throw new CommandException("Cannot create folder $dir");
                 }
             }
-            elseif($path_remote == $path_remote_full) {
-                if(file_exists($path_local)) {
-                    ftp_put($conn_id, $path_remote, $path_local, FTP_BINARY);
-                }
-                else {
-                    throw new FileNotFoundException('File not found on local path');
-                }
+            
+            if(false === ftp_chdir($conn_id, $dir)) {
+                throw new CommandException("Cannot chdir to $dir");
             }
         }
+    }
+    
+    public function put($file, $base_local, $base_ftp, $name_ftp = null) {
+       
+        $conn_id = $this->_ftp_handle;
+        
+        $path_local = $base_local . DIRECTORY_SEPARATOR . $file;
+        $path_remote = $base_ftp . DIRECTORY_SEPARATOR . ($name_ftp == null ? $file : $name_ftp);
 
-        sleep(1);
+        if(file_exists($path_local)) {
+            ftp_put($conn_id, $path_remote, $path_local, FTP_BINARY);
+        }
+        else {
+            throw new FileNotFoundException("File not found on local path $path_local");
+        }
     }
     
     public function delete($file, $base_ftp) {
@@ -116,7 +120,9 @@ class FTPClient {
             $path_remote .= '/' . $dir;
 
             if(in_array($dir, $dirs)) {
-                ftp_chdir($conn_id, $dir);
+                if(false === ftp_chdir($conn_id, $dir)) {
+                    throw new CommandException("Cannot chdir to $dir");
+                }
             }
             else {
                 $is_file = true;
@@ -126,8 +132,13 @@ class FTPClient {
 
         if($path_remote == $base_ftp . '/' . $file) {
             if($is_file) {
+                
+                if(!in_array($file, $files)) {
+                    throw new UnableToDeleteException("File not found $file");
+                }
+                
                 if(@ftp_delete($conn_id, $path_remote) === false) {
-                    throw new UnableToDeleteException('Cannot delete file');
+                    throw new UnableToDeleteException("Cannot delete file $path_remote");
                 }
             }
             else {

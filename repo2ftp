@@ -10,11 +10,15 @@ set_include_path(implode(PATH_SEPARATOR, array(
 )));
 
 require('repo2ftp/Cli.php');
+require('repo2ftp/Repository/RevisionException.php');
 require('repo2ftp/FTPClient.php');
 
 use repo2ftp\Cli;
 use repo2ftp\FTPClient;
 use repo2ftp\Repository\RevisionException;
+use repo2ftp\FTPClient\UnableToDeleteException;
+use repo2ftp\FTPClient\ConnectionException;
+use repo2ftp\FTPClient\CommandException;
 
 $cli = new Cli($base_path);
 
@@ -29,7 +33,7 @@ $path_local = $module_prefix . '.path.local';
 
 $path_exclude = $module_prefix . '.path.exclude';
 
-$cli->output("cli.repository.extracting", $config->get($path_local));
+$cli->outputnl("cli.repository.extracting", $config->get($path_local));
 
 $repo = null;
 if($config->get($module_prefix . '.type') == 'svn') {
@@ -50,6 +54,16 @@ catch(RevisionException $ex) {
     $cli->error('cli.repository.revision.invalid');
 }
 
+$revisions = explode('..', $revision);
+
+$last_revision = null;
+if(count($revisions) == 1) {
+    $last_revision = $revisions[0];
+}
+else {
+    $last_revision = $revisions[1];
+}
+
 $exclude = array();
 
 if($config->exists($path_exclude)) {
@@ -58,12 +72,16 @@ if($config->exists($path_exclude)) {
 
 $job = $repo->extract($revision, $exclude);
 
-foreach($job->getFilesToUpload() as $file) {
-    $cli->output("cli.job.found.upload", $file);
+if($cli->haveToUpload()) {
+    foreach($job->getFilesToUpload() as $file) {
+        $cli->outputnl("cli.job.found.upload", $file);
+    }
 }
 
-foreach($job->getFilesToDelete() as $file) {
-    $cli->output("cli.job.found.delete", $file);
+if($cli->haveToDelete()) {
+    foreach($job->getFilesToDelete() as $file) {
+        $cli->outputnl("cli.job.found.delete", $file);
+    }
 }
 
 if($cli->isDebug()) {
@@ -77,69 +95,131 @@ if(!$cli->confirm()) {
 
 $ftp = new FTPClient();
 
-$cli->output("cli.ftp.connecting", $config->get('ftp.host'));
+$cli->outputnl("cli.ftp.connecting", $config->get('ftp.host'));
 $ftp->open($config->get('ftp.host'));
-$cli->output("cli.ok");
+$cli->outputnl("cli.ok");
 
-$cli->output("cli.ftp.authenticating", $config->get('ftp.username'));
+$cli->outputnl("cli.ftp.authenticating", $config->get('ftp.username'));
 $ftp->login($config->get('ftp.username'), $config->get('ftp.password'));
-$cli->output("cli.ok");
+$cli->outputnl("cli.ok");
 
 $base_ftp = $config->get($path_ftp);
 $base_local = $config->get($path_local);
 
-$files = $job->getFilesToUpload();
-$i = 1;
-$count = count($files);
-foreach($files as $file) {
-    while(true) {
-        $cli->output($i . "/" . $count);
-        $cli->output("cli.ftp.uploading", array($file, $base_local, $base_ftp));
-        try {            
-            $ftp->put($file, $base_local, $base_ftp);
-            $cli->output("cli.ok");
-            $i++;
-            break;
-        }
-        catch(Exception $ex) {
-            $cli->output('cli.ftp.uploading.error', $ex->getMessage());
-            
-            if(!$cli->confirm()) {
-                $cli->error("cli.aborted");
-            }
-                        
-            $cli->output('cli.ftp.uploading.reconnect', $ex->getMessage());
-            
-            if($cli->confirm()) {
-                $ftp->close();
-                
-                $cli->output("cli.ftp.connecting", $config->get('ftp.host'));
-                $ftp->open($config->get('ftp.host'));
-                $cli->output("cli.ok");
+$tmp_local_file = 'repo2ftp.tmp';
 
-                $cli->output("cli.ftp.authenticating", $config->get('ftp.username'));
-                $ftp->login($config->get('ftp.username'), $config->get('ftp.password'));
-                $cli->output("cli.ok");
+$cli->outputnl(":");
+
+if($cli->haveToUpload()) {
+    
+    $i = 1;
+    $files = $job->getFilesToUpload();
+    $count = count($files);
+
+    foreach($files as $file) {
+
+        while(true) {
+
+            $cli->output(":" . $i . "/" . $count . " ==> ");
+            $cli->outputnl("cli.ftp.uploading", array($file, $base_local, $base_ftp));
+
+            try {            
+
+                if(is_file($base_local . DIRECTORY_SEPARATOR . $file)) {
+                    $dir = dirname($file);
+                    $ftp->mkdir($dir, $base_ftp);
+                }
+
+                $tmp_file = $repo->get($file, $last_revision);            
+                file_put_contents($tmp_local_file, $tmp_file);
+
+                $ftp->put($tmp_local_file, '.', $base_ftp, $file);
+
+                $cli->output(":" . $i . "/" . $count . " ==> ");
+                $cli->outputnl("cli.ok");
+                $cli->outputnl(":");
+
+                $i++;
+                break;
+            }
+            catch(Exception $ex) {
+                $cli->outputnl('cli.ftp.uploading.error', $ex->getMessage());
+
+                if(!$cli->confirm()) {
+                    $cli->error("cli.aborted");
+                }
+
+                $cli->outputnl('cli.ftp.reconnect', $ex->getMessage());
+
+                if($cli->confirm()) {
+                    $ftp->close();
+
+                    $cli->outputnl("cli.ftp.connecting", $config->get('ftp.host'));
+                    $ftp->open($config->get('ftp.host'));
+                    $cli->outputnl("cli.ok");
+
+                    $cli->outputnl("cli.ftp.authenticating", $config->get('ftp.username'));
+                    $ftp->login($config->get('ftp.username'), $config->get('ftp.password'));
+                    $cli->outputnl("cli.ok");
+                }
             }
         }
     }
 }
 
-foreach($job->getFilesToDelete() as $file) {
-    $cli->output("cli.ftp.deleting", $file);
-    
-    try {
-        $ftp->delete($file, $base_ftp);
-        $cli->output("cli.ok");
-    }
-    catch(Exception $ex) {
-        $cli->output('cli.ftp.deleting.error', $ex->getMessage());
-        if(!$cli->confirm()) {
-            $cli->error("cli.aborted");
+if($cli->haveToDelete()) {
+    $i = 1;
+    $files = $job->getFilesToDelete();
+    $count = count($files);
+
+    foreach($files as $file) {
+        while(true) {
+
+            $cli->output(":" . $i . "/" . $count . " ==> ");
+            $cli->outputnl("cli.ftp.deleting", $file);
+
+            try {
+                $ftp->delete($file, $base_ftp);
+                $cli->outputnl("cli.ok");
+                $cli->outputnl(":");
+
+                $i++;
+                break;
+            }
+            catch(UnableToDeleteException $ex) {
+
+                $cli->outputnl('cli.ftp.deleting.error', $ex->getMessage());
+                $cli->outputnl(":");
+
+                $i++;
+                break;                
+            }
+            catch(Exception $ex) {
+
+                $cli->outputnl('cli.ftp.deleting.error', $ex->getMessage());
+
+                if(!$cli->confirm()) {
+                    $cli->error("cli.aborted");
+                }
+
+                $cli->outputnl('cli.ftp.reconnect', $ex->getMessage());
+
+                if($cli->confirm()) {
+                    $ftp->close();
+
+                    $cli->outputnl("cli.ftp.connecting", $config->get('ftp.host'));
+                    $ftp->open($config->get('ftp.host'));
+                    $cli->outputnl("cli.ok");
+
+                    $cli->outputnl("cli.ftp.authenticating", $config->get('ftp.username'));
+                    $ftp->login($config->get('ftp.username'), $config->get('ftp.password'));
+                    $cli->outputnl("cli.ok");
+                }
+            }
         }
     }
 }
 
 $ftp->close();
 
-$cli->output("cli.done");
+$cli->outputnl("cli.done");

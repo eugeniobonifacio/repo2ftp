@@ -25,7 +25,7 @@ $m['cli.job.found.upload'] = "+ %s";
 $m['cli.job.found.delete'] = "- %s";
 
 $m['cli.ftp.connecting'] = "Connecting to '%s'";
-$m['cli.ftp.authenticating'] = "Login to '%s'";
+$m['cli.ftp.authenticating'] = "Login as '%s'";
 $m['cli.ftp.uploading'] = "Uploading '%s' from '%s' to '%s'";
 $m['cli.ftp.reconnect'] = "Do you want to reconnect?";
 $m['cli.ftp.uploading.error'] = "Error while uploading the file: '%s'";
