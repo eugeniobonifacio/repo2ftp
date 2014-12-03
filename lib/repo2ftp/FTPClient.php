@@ -60,13 +60,13 @@ class FTPClient {
 
             $path_remote .= '/' . $dir;
 
-            $ls = ftp_nlist($conn_id, $path_remote_prev);
+            $ls = ftp_nlist($conn_id, null);
 
             if($ls === false) {
                 throw new CommandException("Cannot list folder content $path_remote_prev");
             }
-
-            if(!in_array($path_remote, $ls)) {
+            
+            if(!in_array($dir, $ls)) {
                 if(false === ftp_mkdir($conn_id, $dir)) {
                     throw new CommandException("Cannot create folder $dir");
                 }

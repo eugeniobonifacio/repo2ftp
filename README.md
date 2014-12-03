@@ -14,6 +14,15 @@ repo2ftp -c project_config_name [-m module] -r rev_range
 - 'rev_range' is in the same form used by the VCS
 - if 'module' option is not provided, 'base' is assumed
 
+[options]
+-l [language]           (language [it|en], defaults to system language)
+-r [revision range]     (the revision range in the form used by the VCS, i.e. in git revA..revB)
+-c [project]            (the project name, as the name of ini file in config folder)
+-m [module]             (the module/profile name, you can have multiple profiles in a project)
+-d                      (test mode, does not process the job, only lists the actions to do)
+-u                      (uploads only, skips delete job)
+-e                      (deletes only, skips upload job)
+
 ### Multi-project setup:
 
 Create a folder named "config" at the same level of repo2ftp. Inside create an ".ini" file with the name of your project, don't use spaces! Inside the ini file put these options:
