@@ -4,6 +4,7 @@ namespace repo2ftp;
 
 require_once('Locale.php');
 require_once('Config.php');
+require_once('Version.php');
 
 use repo2ftp\Config\MissingOptionException;
 use repo2ftp\Config\OptionNotFoundException;
@@ -12,10 +13,6 @@ class Cli {
     
     private $_info = "REPO2FTP %s - Eugenio Bonifacio http://www.eugeniobonifacio.com";
     
-    private $_version_major = 2;
-    private $_version_minor = 2;
-    private $_version_fix   = 0;
-
     /**
      *
      * @var Locale
@@ -188,8 +185,7 @@ class Cli {
     }
     
     public function getVersion() {
-        $v = $this->_version_major . '.' . $this->_version_minor . '.' . $this->_version_fix;
-        return $this->_locale->get("cli.version", $v);
+        return $this->_locale->get("cli.version", Version::toString());
     }
 }
 
