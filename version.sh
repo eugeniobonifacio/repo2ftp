@@ -19,4 +19,4 @@ sed -e "s/\(\$version_major = \)\(.*\)\(;\)/\1${versions[0]}\3/" \
 
 mv Version.txt lib/repo2ftp/Version.php
 
-exit 1
+exit 0
