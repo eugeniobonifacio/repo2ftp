@@ -54,7 +54,7 @@ class FTPClient {
         $conn_id = $this->_ftp_handle;
         
         $path_remote = $path_base;
-
+        
         foreach($path as $dir) {
             $path_remote_prev = $path_remote;
 
@@ -65,10 +65,10 @@ class FTPClient {
             if($ls === false) {
                 throw new CommandException("Cannot list folder content $path_remote_prev");
             }
-            
+
             if(!in_array($dir, $ls)) {
                 if(false === ftp_mkdir($conn_id, $dir)) {
-                    throw new CommandException("Cannot create folder $dir");
+                    throw new CommandException("Cannot create folder `$dir`");
                 }
             }
             

@@ -6,7 +6,7 @@ class Version {
 
     protected static $version_major = 2;
     protected static $version_minor = 2;
-    protected static $version_fix = 1;
+    protected static $version_fix = 2;
     
     public static function toString() {
         

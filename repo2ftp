@@ -126,8 +126,12 @@ if($cli->haveToUpload()) {
             try {            
 
                 if(is_file($base_local . DIRECTORY_SEPARATOR . $file)) {
+
                     $dir = dirname($file);
-                    $ftp->mkdir($dir, $base_ftp);
+
+                    if($dir != '.') {
+                        $ftp->mkdir($dir, $base_ftp);
+                    }
                 }
 
                 $tmp_file = $repo->get($file, $last_revision);            
