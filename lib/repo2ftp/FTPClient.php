@@ -131,10 +131,13 @@ class FTPClient {
         }
 
         if($path_remote == $base_ftp . '/' . $file) {
+
             if($is_file) {
                 
-                if(!in_array($file, $files)) {
-                    throw new UnableToDeleteException("File not found $file");
+                $file_name = basename($file);
+                
+                if(!in_array($file_name, $files)) {
+                    throw new UnableToDeleteException("File not found $file_name");
                 }
                 
                 if(@ftp_delete($conn_id, $path_remote) === false) {
