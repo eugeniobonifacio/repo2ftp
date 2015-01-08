@@ -35,18 +35,27 @@ class GitRepository implements Repository {
         $lines = explode("\n", $output);
 
         $job = new Job();
-        for($i = 3; $i < count($lines); $i++) {
+        $subtree = "";
+        for($i = 0; $i < count($lines); $i++) {
+            
+            if(preg_match('/^commit ([a-z0-9]{40})$/', $lines[$i], $matched)) {
+                $subtree = "";
+            }
+        
+            if(preg_match('/^(?:\s+)git-subtree-dir: (.*)$/', $lines[$i], $matched)) {
+                $subtree = $matched[1] . DIRECTORY_SEPARATOR;
+            }
             
             if(preg_match('/^([AMD]{1})(?:\s+)([^\(\)]*)(?: \(.*\))?$/', $lines[$i], $matched)) {
 
                 $file = $matched[2];
 
-                $file_relative_path = null;
+                $file_relative_path = $subtree;
                 if(empty($base_repo)) {
-                    $file_relative_path = $file;
+                    $file_relative_path .= $file;
                 }
                 elseif(strpos($file, $base_repo) !== 0) {
-                    $file_relative_path = substr($file, strlen($base_repo));
+                    $file_relative_path .= substr($file, strlen($base_repo));
                 }
                 else {
                     continue;
